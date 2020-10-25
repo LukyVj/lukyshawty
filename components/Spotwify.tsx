@@ -11,6 +11,10 @@ import {
 import { slugify } from "../scripts/helpers";
 import { BlurhashCanvas } from "react-blurhash";
 
+import cx from "classnames";
+
+import style from "./spotwify.module.css";
+
 const searchClient = algoliasearch(
   process.env.NEXT_PUBLIC_ALGOLIA_APP_ID,
   process.env.NEXT_PUBLIC_ALGOLIA_API_KEY
@@ -162,7 +166,7 @@ const Spotwify = () => {
   return (
     <InstantSearch searchClient={searchClient} indexName={"SPOTWIFY"}>
       <Configure hitsPerPage={40} />
-      <div className="pos-sticky top-0 z-5 bgc-black">
+      <div className={cx("pos-sticky top-8 z-5 bgc-black", style.header)}>
         <CustomSearchBox />
         <CustomRefinementList attribute="artists.0.name" />
       </div>
