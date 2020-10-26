@@ -104,10 +104,12 @@ const Hits = ({ hits }) => {
               className="bgc-white bdr-6 color-black fw-bold ov-hidden"
             >
               <div className="pos-relative">
-                {/* <BlurhashCanvas
-                  hash={hit.blur_hash}
-                  className="pos-absolute z-0 w-100p h-100p"
-                /> */}
+                {hits.blur_hash && (
+                  <BlurhashCanvas
+                    hash={hit.blur_hash}
+                    className="pos-absolute z-0 w-100p h-100p"
+                  />
+                )}
                 <img
                   src={
                     hit.track_images &&
