@@ -104,10 +104,10 @@ const Hits = ({ hits }) => {
               className="bgc-white bdr-6 color-black fw-bold ov-hidden"
             >
               <div className="pos-relative">
-                <BlurhashCanvas
+                {/* <BlurhashCanvas
                   hash={hit.blur_hash}
                   className="pos-absolute z-0 w-100p h-100p"
-                />
+                /> */}
                 <img
                   src={
                     hit.track_images &&
@@ -137,20 +137,29 @@ const Hits = ({ hits }) => {
                       🔗 Listen on Spotify
                     </a>
                   </p>
-                  <label htmlFor={`popularity-${slugify(hit?.track_name)}`}>
-                    Popularity:
-                  </label>
-                  <progress
-                    value={hit?.popularity}
-                    max="100"
-                    id={`popularity-${slugify(hit?.track_name)}`}
-                  />
+                  <div>
+                    <label htmlFor={`popularity-${slugify(hit?.track_name)}`}>
+                      Popularity:
+                    </label>
+                    <br />
+                    <span className="p-8">{hit?.popularity}</span>
+                    <progress
+                      value={hit?.popularity}
+                      max="100"
+                      id={`popularity-${slugify(hit?.track_name)}`}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor={`sample-${slugify(hit?.track_name)}`}>
+                      Sample:
+                    </label>
 
-                  <label htmlFor={`sample-${slugify(hit?.track_name)}`}>
-                    Sample:
-                  </label>
-
-                  <audio src={hit?.preview_url} controls></audio>
+                    <audio
+                      src={hit?.preview_url}
+                      controls
+                      className="app-none bdr-0"
+                    ></audio>
+                  </div>
                 </article>
               </div>
             </div>
