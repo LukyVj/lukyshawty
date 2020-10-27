@@ -14,6 +14,7 @@ import { BlurhashCanvas } from "react-blurhash";
 import cx from "classnames";
 
 import style from "./spotwify.module.css";
+import { useState } from "react";
 
 const searchClient = algoliasearch(
   process.env.NEXT_PUBLIC_ALGOLIA_APP_ID,
@@ -89,6 +90,7 @@ const RefinementList = ({
 const CustomRefinementList = connectRefinementList(RefinementList);
 
 const Hits = ({ hits }) => {
+  const [blurhash, setBlurhash] = useState<string | null>(null);
   return (
     <div className="d-grid g-2 ggap-16 md:g-4 lg:g-6 pt-16">
       {hits.map((hit) => {
@@ -104,9 +106,9 @@ const Hits = ({ hits }) => {
               className="bgc-white bdr-6 color-black fw-bold ov-hidden"
             >
               <div className="pos-relative">
-                {hits.blur_hash && (
+                {blurhash && (
                   <BlurhashCanvas
-                    hash={hit.blur_hash}
+                    hash={blurhash}
                     className="pos-absolute z-0 w-100p h-100p"
                   />
                 )}
