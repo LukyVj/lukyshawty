@@ -163,11 +163,23 @@ const Hit = ({ hit }: any) => {
       imageRef.current.alt = hit?.track_name;
       imageRef.current.className =
         "w-100p h-100p obf-cover obp-center m-0 p-0 z-1 op-1";
-      imageRef.current.style.transform = "scale(0.9)";
-      imageRef.current.style.transition = "opacity .3s ease";
+      imageRef.current.style.transform = "scale(0.8)";
+      imageRef.current.style.transition =
+        "opacity .3s ease, transform .2s ease";
       imageRef.current.loading = "lazy";
     }
   }, [blurhash]);
+
+  useEffect(() => {
+    if (imageRef.current) {
+      imageRef.current.addEventListener("mouseover", () => {
+        imageRef.current.style.transform = "scale(0.9)";
+      });
+      imageRef.current.addEventListener("mouseleave", () => {
+        imageRef.current.style.transform = "scale(0.8)";
+      });
+    }
+  });
 
   return (
     <div
