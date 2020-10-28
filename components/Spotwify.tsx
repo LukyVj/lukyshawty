@@ -136,23 +136,23 @@ const Hit = ({ hit }: any) => {
 
   const { data, error } = useSWR(
     `/api/hello/?q=${
-      hit.track_images &&
-      hit.track_images[2] &&
-      decodeURI(hit.track_images[2].url)
+      hit.track_images && hit.track_images[2] && hit.track_images[2].url
     }`
   );
 
   useEffect(() => {
     // If local storage exists
-    if (localStorage.getItem(hit && hit.track_name) !== null) {
+    if (localStorage.getItem(hit && hit.track_name)) {
       setBlurhash(JSON.parse(localStorage.getItem(hit && hit.track_name)).blur);
+      console.log("from storage");
     } else {
       if (data) {
         setBlurhash(data.hash);
         setImgBlur({ blur: data.hash, timestamp: new Date() });
+        console.log("from api");
       }
     }
-  }, []);
+  }, [data]);
 
   return (
     <div
@@ -233,7 +233,7 @@ const CustomHits = connectHits(Hits);
 const Spotwify = () => {
   return (
     <InstantSearch searchClient={searchClient} indexName={"SPOTWIFY"}>
-      <Configure hitsPerPage={40} />
+      <Configure hitsPerPage={60} />
       <div className={cx("pos-sticky top-8 z-5 bgc-black", style.header)}>
         <CustomSearchBox />
         <CustomRefinementList attribute="artists.0.name" />
