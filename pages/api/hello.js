@@ -12,6 +12,7 @@ const getImageData = (image) => {
 };
 
 const encodeImageToBlurhash = async (imageUrl, res, start) => {
+  console.log(imageUrl);
   const image = await loadImage(imageUrl);
   const imageData = getImageData(image);
 
@@ -22,27 +23,25 @@ const encodeImageToBlurhash = async (imageUrl, res, start) => {
 };
 
 export default async (req, res) => {
-  if ((res.statusCode = 200)) {
-    res.setHeader("Content-Type", "application/json");
+  res.statusCode = 200;
+  res.setHeader("Content-Type", "application/json");
+  const imgUrl = `${req.url}`.split("?q=")[1];
 
-    console.log(`Request ➡️ ${req.originalUrl}`);
-    req.setTimeout(2147483647);
-    var start = Date.now();
+  req.setTimeout(2147483647);
+  var start = Date.now();
 
-    try {
-      await encodeImageToBlurhash(req.originalUrl.split("/?q=")[1], res, start);
-    } catch (err) {
-      console.log(err);
-    }
-
-    if (req.method === "OPTIONS") {
-      res.header(
-        "Access-Control-Allow-Methods",
-        "PUT, POST, PATCH, DELETE, GET"
-      );
-      return res.status(200).json({});
-    }
-
-    res.json({ name: "John Doe" });
+  try {
+    await encodeImageToBlurhash(imgUrl, res, start);
+  } catch (err) {
+    console.log(err);
   }
+
+  if (req.method === "OPTIONS") {
+    res.header("Access-Control-Allow-Methods", "PUT, POST, PATCH, DELETE, GET");
+    return res.status(200).json({});
+  }
+
+  // res.statusCode = 200;
+  // res.setHeader("Content-Type", "application/json");
+  // res.json({ res: req.url });
 };
