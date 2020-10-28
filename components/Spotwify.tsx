@@ -136,7 +136,9 @@ const Hit = ({ hit }: any) => {
 
   const { data, error } = useSWR(
     `/api/hello/?q=${
-      hit.track_images && hit.track_images[2] && hit.track_images[2].url
+      hit.track_images &&
+      hit.track_images[2] &&
+      decodeURI(hit.track_images[2].url)
     }`
   );
 
