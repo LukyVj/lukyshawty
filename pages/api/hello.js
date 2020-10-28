@@ -39,8 +39,4 @@ export default async (req, res) => {
     res.header("Access-Control-Allow-Methods", "PUT, POST, PATCH, DELETE, GET");
     return res.status(200).json({});
   }
-
-  // res.statusCode = 200;
-  // res.setHeader("Content-Type", "application/json");
-  // res.json({ res: req.url });
 };
