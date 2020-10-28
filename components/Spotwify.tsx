@@ -142,11 +142,12 @@ const Hit = ({ hit }: any) => {
 
   useEffect(() => {
     // If local storage exists
-    if (localStorage.getItem(hit && hit.track_name)) {
+    if (localStorage.getItem(hit && hit.track_name) !== null) {
       setBlurhash(JSON.parse(localStorage.getItem(hit && hit.track_name)).blur);
     } else {
       if (data) {
         setBlurhash(data.hash);
+        setImgBlur({ blur: data.hash, timestamp: new Date() });
       }
     }
   }, []);
