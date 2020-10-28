@@ -10,7 +10,7 @@ import {
 } from "react-instantsearch-dom";
 import { slugify } from "../scripts/helpers";
 import { BlurhashCanvas } from "react-blurhash";
-import useSWR from "swr";
+import { X } from "react-feather";
 
 import cx from "classnames";
 
@@ -51,21 +51,28 @@ const searchClient = algoliasearch(
 );
 
 const SearchBox = ({ currentRefinement, isSearchStalled, refine }) => (
-  <form noValidate action="" role="search" className="w-100p d-grid g-6 h-60">
+  <form
+    noValidate
+    action=""
+    role="search"
+    className="w-100p pos-relative mb-16 p-0 m-0"
+  >
     <input
       type="search"
       value={currentRefinement}
       onChange={(event) => refine(event.currentTarget.value)}
-      className="gcstart-1 gcend-5 ph-16 fsz-24 app-none bdc-black bds-solid bdbw-4 bdlw-0 bdtw-0 bdrw-0"
+      className="ph-16 h-40 fsz-24 w-100p app-none bdc-black bds-solid bdbw-4 bdlw-0 bdtw-0 bdrw-0 bdr-max"
       placeholder="Search for a song"
+      style={{ lineHeight: "40px" }}
     />
+
     <button
+      className="pos-absolute top-0 right-0 app-none h-100p w-32 bgc-transparent bdw-0 fsz-24 ph-16 pv-0 va-middle"
+      style={{ lineHeight: "40px" }}
       onClick={() => refine("")}
-      className="gcstart-5 gcend-7 bgc-transparent color-white app-none bdc-black bds-solid"
     >
-      Reset query
+      <X />
     </button>
-    {isSearchStalled ? "My search is stalled" : ""}
   </form>
 );
 
@@ -77,28 +84,32 @@ const RefinementList = ({
   searchForItems,
   createURL,
 }) => (
-  <ul className="d-grid g-6 lis-none p-0 m-0">
-    <li className="gcstart-1 gcend-7">
+  <ul className="d-grid g-6 lis-none p-0 m-0 ggap-8">
+    <li className="gcstart-1 gcend-7 d-grid g-2 ggap-16">
+      <div className="d-none md:d-block">
+        <CustomSearchBox />
+      </div>
+
       <input
         type="search"
         onChange={(event) => searchForItems(event.currentTarget.value)}
-        className="w-100p h-60 ph-16 fsz-24 app-none bdw-0"
+        className="w-100p h-40 ph-16 fsz-24 app-none bdw-0 bdr-max"
         placeholder="Search for more artist"
       />
     </li>
     {items.map((item) => (
       <li
         key={item.label}
-        className="bdw-2 bds-solid"
-        style={{ borderColor: item.isRefined ? "black" : "white" }}
+        className={cx(
+          "bdw-2 bds-solid",
+          style.button,
+          item.isRefined && style.buttonActive
+        )}
+        style={{ backgroundColor: item.isRefined ? "black" : "#1db954" }}
       >
         <a
           href={createURL(item.value)}
-          style={{
-            background: item.isRefined ? "white" : "",
-            color: item.isRefined ? "black" : "white",
-          }}
-          className="w-100p h-100p d-block p-16"
+          className={"w-100p h-100p d-block p-16"}
           onClick={(event) => {
             event.preventDefault();
             refine(item.value);
@@ -277,9 +288,16 @@ const Spotwify = () => {
       {visited !== true && <SetupScreen />}
       <InstantSearch searchClient={searchClient} indexName={"SPOTWIFY"}>
         <Configure hitsPerPage={20} />
-        <div className={cx("pos-sticky top-8 z-5 bgc-black", style.header)}>
-          <CustomSearchBox />
-          <CustomRefinementList attribute="artists.0.name" />
+        <div
+          className={cx("pos-sticky top-0 z-5 bgc-black p-24", style.header)}
+          style={{ marginLeft: "-16px", width: "calc(100% + 32px)" }}
+        >
+          <div className="d-block md:d-none">
+            <CustomSearchBox />
+          </div>
+          <div className="d-none md:d-block">
+            <CustomRefinementList attribute="artists.0.name" />
+          </div>
         </div>
 
         <CustomHits />

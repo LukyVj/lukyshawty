@@ -8,3 +8,15 @@
   left: 0;
   background-color: black;
 }
+
+.button {
+  background-color: #1db954;
+  color: white;
+  border-color: #1db954;
+  border-radius: 100px;
+  text-align: center;
+}
+
+.buttonActive {
+  border-color: white;
+}

@@ -1,0 +1,5 @@
+.pageWrapper {
+  background: linear-gradient(#ccc, #000, #000);
+  overflow: auto;
+  height: 100%;
+}

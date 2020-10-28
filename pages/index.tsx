@@ -1,15 +1,19 @@
 import Head from "next/head";
-
 import Spotwify from "../components/Spotwify";
+
+import cx from "classnames";
+
+import style from "./index.module.css";
+
 const Home = () => {
   return (
-    <div className="p-8">
+    <div className={cx("p-8", style.pageWrapper)}>
       <Head>
         <title>Create Next App</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="p-8">
+      <main>
         <Spotwify />
       </main>
 
