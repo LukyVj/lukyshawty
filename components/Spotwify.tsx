@@ -135,9 +135,7 @@ const Hit = ({ hit }: any) => {
   const [blurhash, setBlurhash] = useState<string | null>(null);
 
   const { data, error } = useSWR(
-    `/api/hello/?q=${
-      hit.track_images && hit.track_images[2] && hit.track_images[2].url
-    }`
+    `/api/hello/?q=${hit.track_images?.[2]?.url ?? null}`
   );
 
   useEffect(() => {
