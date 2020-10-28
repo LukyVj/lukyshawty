@@ -10,7 +10,7 @@ import {
 } from "react-instantsearch-dom";
 import { slugify } from "../scripts/helpers";
 import { BlurhashCanvas } from "react-blurhash";
-import { X } from "react-feather";
+import { X, Play, Pause, SkipBack } from "react-feather";
 
 import cx from "classnames";
 
@@ -134,6 +134,7 @@ const Hit = ({ hit }: any) => {
   const [ready, setReady] = useState<boolean>(false);
   const imageRef = useRef<HTMLImageElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
   useEffect(() => {
     const main = async () => {
@@ -161,7 +162,7 @@ const Hit = ({ hit }: any) => {
       imageRef.current.src = hit?.track_images[1]?.url;
       imageRef.current.alt = hit?.track_name;
       imageRef.current.className =
-        "w-100p h-100p obf-contain obp-center m-0 p-0 z-1 op-1";
+        "w-100p h-100p obf-cover obp-center m-0 p-0 z-1 op-1";
       imageRef.current.style.transform = "scale(0.9)";
       imageRef.current.style.transition = "opacity .3s ease";
       imageRef.current.loading = "lazy";
@@ -171,7 +172,7 @@ const Hit = ({ hit }: any) => {
   return (
     <div
       key={hit.objectID}
-      className="bgc-white bdr-6 color-black fw-bold ov-hidden"
+      className="bdr-6 color-black fw-bold ov-hidden h-100p"
     >
       <div className="h-260">
         {ready && (
@@ -183,7 +184,11 @@ const Hit = ({ hit }: any) => {
               />
             )}
 
-            <img ref={imageRef} className="op-0" />
+            <img
+              ref={imageRef}
+              className="op-0"
+              style={{ boxShadow: "0 8px 24px rgba(0,0,0,.5)" }}
+            />
           </div>
         )}
         {!ready && (
@@ -192,15 +197,21 @@ const Hit = ({ hit }: any) => {
           </div>
         )}
       </div>
-      <div className="pos-relative p-16 z-4">
+      <div
+        className={cx(
+          "pos-relative p-16 z-4 bdlw-1 bdrw-1 bdbw-1 bds-solid bdc-black bdtw-0 color-theme bdblr-6 bdbrr-6 color-light-grey fw-normal",
+          style.card
+        )}
+      >
         <header>
-          {hit.track_name} by {hit && hit.artists && hit.artists[0].name}
+          <h4 className="color-white m-0">{hit?.track_name}</h4>
+          <small style={{ color: "#b3b3b3" }}>{hit?.artists[0]?.name}</small>
         </header>
         <article>
           <p>
             <a
               href={hit?.entities?.urls && hit?.entities?.urls[0].expanded_url}
-              className="bdw-0 bdbw-2 bds-dotted bdc-black"
+              className="bdw-0 bdbw-2 bds-dotted bdc-theme"
             >
               🔗 Listen on Spotify
             </a>
@@ -219,7 +230,7 @@ const Hit = ({ hit }: any) => {
           </div>
           <div>
             <label htmlFor={`sample-${slugify(hit?.track_name)}`}>
-              Sample:
+              30 seconds sample:
             </label>
 
             <audio
@@ -229,47 +240,47 @@ const Hit = ({ hit }: any) => {
               ref={audioRef}
             ></audio>
 
-            <div>
-              <button
-                onClick={() => {
-                  if (audioRef?.current) {
-                    audioRef.current.play();
-                  }
-                }}
-                className={cx(
-                  "app-none bdw-0 pv-8 ph-16 cursor-pointer",
-                  style.button
-                )}
-              >
-                play
-              </button>
-              <button
-                onClick={() => {
-                  if (audioRef?.current) {
-                    audioRef.current.pause();
-                  }
-                }}
-                className={cx(
-                  "app-none bdw-0 pv-8 ph-16 cursor-pointer",
-                  style.button
-                )}
-              >
-                pause
-              </button>
-              <button
-                onClick={() => {
-                  if (audioRef?.current) {
-                    audioRef.current.pause();
-                    audioRef.current.currentTime = 0;
-                  }
-                }}
-                className={cx(
-                  "app-none bdw-0 pv-8 ph-16 cursor-pointer",
-                  style.button
-                )}
-              >
-                stop
-              </button>
+            <div className="d-grid g-4 ggap-8 pv-16">
+              {[
+                {
+                  value: isPlaying ? (
+                    <Pause />
+                  ) : (
+                    <Play width={20} height={20} />
+                  ),
+                  action: () => {
+                    if (audioRef?.current) {
+                      if (audioRef.current.paused) {
+                        audioRef.current.play();
+                        setIsPlaying(true);
+                      } else {
+                        audioRef.current.pause();
+                        setIsPlaying(false);
+                      }
+                    }
+                  },
+                },
+                {
+                  value: <SkipBack width={20} height={20} />,
+                  action: () => {
+                    if (audioRef?.current) {
+                      audioRef.current.pause();
+                      audioRef.current.currentTime = 0;
+                    }
+                  },
+                },
+              ].map((item, index) => (
+                <button
+                  key={index}
+                  onClick={() => item.action()}
+                  className={cx(
+                    "app-none bdw-0 p-8 cursor-pointer",
+                    style.button
+                  )}
+                >
+                  {item.value}
+                </button>
+              ))}
             </div>
           </div>
         </article>
@@ -307,11 +318,8 @@ const SetupScreen = () => {
         display: deleteScreen ? "none" : "block",
       }}
     >
-      <h2>That's your first visit</h2>
-      <h3>
-        Please wait while some data are loaded ( you'll see this message only
-        once ){" "}
-      </h3>
+      <h2>Some things have changed since your last visit</h2>
+      <h3>Hang on</h3>
     </div>
   );
 };
@@ -320,12 +328,16 @@ const Spotwify = () => {
   const [visited, setVisited] = useState<boolean | null>(false);
 
   useEffect(() => {
-    if (localStorage.getItem("spotwify-visited") !== null) {
+    const projectVersion = 2;
+    if (localStorage.getItem(`spotwify-visited-v-${projectVersion - 1}`)) {
+      localStorage.clear();
+    }
+    if (localStorage.getItem(`spotwify-visited-v-${projectVersion}`) !== null) {
       console.log("YES");
       setVisited(true);
     } else {
       setVisited(false);
-      localStorage.setItem("spotwify-visited", "1");
+      localStorage.setItem(`spotwify-visited-v-${projectVersion}`, "1");
     }
   });
   return (

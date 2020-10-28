@@ -20,3 +20,10 @@
 .buttonActive {
   border-color: white;
 }
+.card {
+  background: #181818;
+  transition: background 0.2s ease;
+}
+.card:hover {
+  background: #282828;
+}

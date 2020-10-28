@@ -9,7 +9,7 @@ const Home = () => {
   return (
     <div className={cx("p-8", style.pageWrapper)}>
       <Head>
-        <title>Create Next App</title>
+        <title>LukyVj playlist - @LukyShawty</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
