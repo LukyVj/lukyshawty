@@ -224,7 +224,7 @@ const Hit = ({ hit }: any) => {
             <audio
               src={hit?.preview_url}
               controls
-              className="app-none bdr-0"
+              className="app-none bdr-0 w-100p"
             ></audio>
           </div>
         </article>
