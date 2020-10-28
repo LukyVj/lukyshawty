@@ -238,6 +238,7 @@ const Hit = ({ hit }: any) => {
               value={hit?.popularity}
               max="100"
               id={`popularity-${slugify(hit?.track_name)}`}
+              className="w-100p"
             />
           </div>
           <div>
@@ -303,7 +304,7 @@ const Hit = ({ hit }: any) => {
 
 const Hits = ({ hits }) => {
   return (
-    <div className="d-grid g-2 ggap-16 md:g-4 lg:g-6 pt-16">
+    <div className="d-grid g-2 ggap-16 md:g-4 lg:g-6 pt-16 w-100p">
       {hits.map((hit) => {
         return <Hit key={hit.objectID} hit={hit} />;
       })}
@@ -353,7 +354,7 @@ const Spotwify = () => {
     }
   });
   return (
-    <>
+    <div className="w-100p">
       {visited !== true && <SetupScreen />}
       <InstantSearch searchClient={searchClient} indexName={"SPOTWIFY"}>
         <Configure hitsPerPage={20} />
@@ -373,7 +374,7 @@ const Spotwify = () => {
 
         <Pagination />
       </InstantSearch>
-    </>
+    </div>
   );
 };
 
