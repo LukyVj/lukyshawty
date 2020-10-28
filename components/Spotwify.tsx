@@ -133,6 +133,7 @@ const Hit = ({ hit }: any) => {
   const [blurhash, setBlurhash] = useState<string | null>(null);
   const [ready, setReady] = useState<boolean>(false);
   const imageRef = useRef<HTMLImageElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     const main = async () => {
@@ -224,8 +225,52 @@ const Hit = ({ hit }: any) => {
             <audio
               src={hit?.preview_url}
               controls
-              className="app-none bdr-0 w-100p"
+              className="app-none bdr-0 w-100p d-none"
+              ref={audioRef}
             ></audio>
+
+            <div>
+              <button
+                onClick={() => {
+                  if (audioRef?.current) {
+                    audioRef.current.play();
+                  }
+                }}
+                className={cx(
+                  "app-none bdw-0 pv-8 ph-16 cursor-pointer",
+                  style.button
+                )}
+              >
+                play
+              </button>
+              <button
+                onClick={() => {
+                  if (audioRef?.current) {
+                    audioRef.current.pause();
+                  }
+                }}
+                className={cx(
+                  "app-none bdw-0 pv-8 ph-16 cursor-pointer",
+                  style.button
+                )}
+              >
+                pause
+              </button>
+              <button
+                onClick={() => {
+                  if (audioRef?.current) {
+                    audioRef.current.pause();
+                    audioRef.current.currentTime = 0;
+                  }
+                }}
+                className={cx(
+                  "app-none bdw-0 pv-8 ph-16 cursor-pointer",
+                  style.button
+                )}
+              >
+                stop
+              </button>
+            </div>
           </div>
         </article>
       </div>
