@@ -360,7 +360,6 @@ const Spotwify = () => {
         <Configure hitsPerPage={20} />
         <div
           className={cx("pos-sticky top-0 z-5 bgc-black p-24", style.header)}
-          style={{ marginLeft: "-16px", width: "calc(100% + 32px)" }}
         >
           <div className="d-block md:d-none">
             <CustomSearchBox />
@@ -370,7 +369,9 @@ const Spotwify = () => {
           </div>
         </div>
 
-        <CustomHits />
+        <div className="w-100p ov-hidden">
+          <CustomHits />
+        </div>
 
         <Pagination />
       </InstantSearch>
