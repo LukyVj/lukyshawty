@@ -17,46 +17,36 @@ import cx from "classnames";
 import style from "./spotwify.module.css";
 import { useEffect, useState } from "react";
 
+import { encode } from "blurhash";
+
+const loadImage = async (src) =>
+  new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = (...args) => reject(args);
+    img.src = src;
+  });
+
+const getImageData = (image) => {
+  const canvas = document.createElement("canvas");
+  canvas.width = image.width;
+  canvas.height = image.height;
+  const context = canvas.getContext("2d");
+  context.drawImage(image, 0, 0);
+  return context.getImageData(0, 0, image.width, image.height);
+};
+
+const encodeImageToBlurhash = async (imageUrl) => {
+  const image = (await loadImage(imageUrl)) as any;
+  const imageData = getImageData(image);
+  return encode(imageData.data, imageData.width, imageData.height, 4, 4);
+};
+
 const searchClient = algoliasearch(
   process.env.NEXT_PUBLIC_ALGOLIA_APP_ID,
   process.env.NEXT_PUBLIC_ALGOLIA_API_KEY
 );
-
-function useLocalStorage<T>(key: string, initialValue: T) {
-  // State to store our value
-  // Pass initial state function to useState so logic is only executed once
-  const [storedValue, setStoredValue] = useState<T>(() => {
-    try {
-      // Get from local storage by key
-      const item = window.localStorage.getItem(key);
-      // Parse stored json or if none return initialValue
-      return item ? JSON.parse(item) : initialValue;
-    } catch (error) {
-      // If error also return initialValue
-      console.log(error);
-      return initialValue;
-    }
-  });
-
-  // Return a wrapped version of useState's setter function that ...
-  // ... persists the new value to localStorage.
-  const setValue = (value: T | ((val: T) => T)) => {
-    try {
-      // Allow value to be a function so we have same API as useState
-      const valueToStore =
-        value instanceof Function ? value(storedValue) : value;
-      // Save state
-      setStoredValue(valueToStore);
-      // Save to local storage
-      window.localStorage.setItem(key, JSON.stringify(valueToStore));
-    } catch (error) {
-      // A more advanced implementation would handle the error case
-      console.log(error);
-    }
-  };
-
-  return [storedValue, setValue];
-}
 
 const SearchBox = ({ currentRefinement, isSearchStalled, refine }) => (
   <form noValidate action="" role="search" className="w-100p d-grid g-6 h-60">
@@ -126,112 +116,115 @@ const RefinementList = ({
 
 const CustomRefinementList = connectRefinementList(RefinementList);
 
-const Hit = ({ hit }: any) => {
-  const [imgBlur, setImgBlur] = useLocalStorage<string | any>(
-    hit && hit.track_name,
-    ""
-  );
+const Spotwify = () => {
+  const [reload, setReload] = useState<boolean>(false);
+  const Hit = ({ hit }: any) => {
+    const [blurhash, setBlurhash] = useState<string | null>(null);
 
-  const [blurhash, setBlurhash] = useState<string | null>(null);
+    useEffect(() => {
+      const main = async () => {
+        // If local storage exists
+        if (localStorage.getItem(hit?.track_name)) {
+          const savedHash = localStorage.getItem(hit?.track_name);
 
-  const { data, error } = useSWR(
-    `/api/hello/?q=${hit.track_images?.[2]?.url ?? null}`
-  );
+          setBlurhash(savedHash);
+        } else {
+          const returedBlur = await encodeImageToBlurhash(
+            hit?.track_images[1]?.url
+          );
+          if (returedBlur) {
+            localStorage.setItem(hit?.track_name, returedBlur);
+          }
+        }
+      };
+      main();
+    });
+
+    return (
+      <div
+        key={hit.objectID}
+        className="bgc-white bdr-6 color-black fw-bold ov-hidden"
+      >
+        <div className="pos-relative">
+          {blurhash && (
+            <BlurhashCanvas
+              hash={blurhash}
+              className="pos-absolute z-0 w-100p h-100p"
+            />
+          )}
+          <img
+            src={
+              hit.track_images && hit.track_images[1] && hit.track_images[1].url
+            }
+            alt={hit.track_name}
+            className="w-100p h-100p obf-cover obp-center m-0 p-0 z-1"
+            style={{ transform: "scale(0.9)" }}
+            loading="lazy"
+          />
+        </div>
+        <div className="pos-relative p-16 z-4">
+          <header>
+            {hit.track_name} by {hit && hit.artists && hit.artists[0].name}
+          </header>
+          <article>
+            <p>
+              <a
+                href={
+                  hit?.entities?.urls && hit?.entities?.urls[0].expanded_url
+                }
+                className="bdw-0 bdbw-2 bds-dotted bdc-black"
+              >
+                🔗 Listen on Spotify
+              </a>
+            </p>
+            <div>
+              <label htmlFor={`popularity-${slugify(hit?.track_name)}`}>
+                Popularity:
+              </label>
+              <br />
+              <span className="p-8">{hit?.popularity}</span>
+              <progress
+                value={hit?.popularity}
+                max="100"
+                id={`popularity-${slugify(hit?.track_name)}`}
+              />
+            </div>
+            <div>
+              <label htmlFor={`sample-${slugify(hit?.track_name)}`}>
+                Sample:
+              </label>
+
+              <audio
+                src={hit?.preview_url}
+                controls
+                className="app-none bdr-0"
+              ></audio>
+            </div>
+          </article>
+        </div>
+      </div>
+    );
+  };
+
+  const Hits = ({ hits }) => {
+    return (
+      <div className="d-grid g-2 ggap-16 md:g-4 lg:g-6 pt-16">
+        {hits.map((hit) => {
+          return <Hit hit={hit} />;
+        })}
+      </div>
+    );
+  };
+
+  const CustomHits = connectHits(Hits);
 
   useEffect(() => {
-    // If local storage exists
-    if (localStorage.getItem(hit && hit.track_name)) {
-      setBlurhash(JSON.parse(localStorage.getItem(hit && hit.track_name)).blur);
-      console.log("from storage");
-    } else {
-      if (data) {
-        setBlurhash(data.hash);
-        setImgBlur({ blur: data.hash, timestamp: new Date() });
-        console.log("from api");
-      }
-    }
-  }, [data]);
+    setReload(true);
+  }, []);
 
-  return (
-    <div
-      key={hit.objectID}
-      className="bgc-white bdr-6 color-black fw-bold ov-hidden"
-    >
-      <div className="pos-relative">
-        {blurhash && (
-          <BlurhashCanvas
-            hash={blurhash}
-            className="pos-absolute z-0 w-100p h-100p"
-          />
-        )}
-        <img
-          src={
-            hit.track_images && hit.track_images[1] && hit.track_images[1].url
-          }
-          alt={hit.track_name}
-          className="w-100p h-100p obf-cover obp-center m-0 p-0 z-1"
-          style={{ transform: "scale(0.9)" }}
-          loading="lazy"
-        />
-      </div>
-      <div className="pos-relative p-16 z-4">
-        <header>
-          {hit.track_name} by {hit && hit.artists && hit.artists[0].name}
-        </header>
-        <article>
-          <p>
-            <a
-              href={hit?.entities?.urls && hit?.entities?.urls[0].expanded_url}
-              className="bdw-0 bdbw-2 bds-dotted bdc-black"
-            >
-              🔗 Listen on Spotify
-            </a>
-          </p>
-          <div>
-            <label htmlFor={`popularity-${slugify(hit?.track_name)}`}>
-              Popularity:
-            </label>
-            <br />
-            <span className="p-8">{hit?.popularity}</span>
-            <progress
-              value={hit?.popularity}
-              max="100"
-              id={`popularity-${slugify(hit?.track_name)}`}
-            />
-          </div>
-          <div>
-            <label htmlFor={`sample-${slugify(hit?.track_name)}`}>
-              Sample:
-            </label>
-
-            <audio
-              src={hit?.preview_url}
-              controls
-              className="app-none bdr-0"
-            ></audio>
-          </div>
-        </article>
-      </div>
-    </div>
-  );
-};
-
-const Hits = ({ hits }) => {
-  useEffect(() => {});
-  return (
-    <div className="d-grid g-2 ggap-16 md:g-4 lg:g-6 pt-16">
-      {hits.map((hit) => {
-        return <Hit hit={hit} />;
-      })}
-    </div>
-  );
-};
-
-const CustomHits = connectHits(Hits);
-const Spotwify = () => {
   return (
     <InstantSearch searchClient={searchClient} indexName={"SPOTWIFY"}>
-      <Configure hitsPerPage={60} />
+      <Configure hitsPerPage={20} />
       <div className={cx("pos-sticky top-8 z-5 bgc-black", style.header)}>
         <CustomSearchBox />
         <CustomRefinementList attribute="artists.0.name" />
