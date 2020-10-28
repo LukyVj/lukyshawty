@@ -30,7 +30,7 @@ export default async (req, res) => {
   var start = Date.now();
 
   try {
-    await encodeImageToBlurhash(imgUrl, res, start);
+    await encodeImageToBlurhash(decodeURI(imgUrl), res, start);
   } catch (err) {
     console.log(err);
   }
