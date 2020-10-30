@@ -216,7 +216,7 @@ const Hit = ({ hit }: any) => {
   return (
     <div
       key={hit.objectID}
-      className="bdr-6 color-black fw-bold ov-hidden h-100p"
+      className="bdr-6 color-black fw-bold ov-hidden h-100 md:h-100p d-flex fxd-row md:d-block"
       ref={cardRef}
       onMouseOver={() => {
         setHovered(true);
@@ -225,11 +225,11 @@ const Hit = ({ hit }: any) => {
         setHovered(false);
       }}
     >
-      <div className="h-260">
+      <div className="h-auto md:h-260 fx-5">
         {ready && (
           <div className="pos-relative h-100p">
             <div
-              className="pos-absolute z-5 right-16 h-auto "
+              className="pos-absolute z-5 right-16 h-auto d-none md:d-block"
               style={{ bottom: -16 }}
             >
               {[
@@ -275,7 +275,12 @@ const Hit = ({ hit }: any) => {
               ))}
             </div>
 
-            <div className="pos-absolute z-4 h-100p w-100p bdw-1 bds-solid bdc-black bdtlr-6 bdtrr-6 ov-hidden">
+            <div
+              className={cx(
+                "pos-absolute z-4 h-100p w-100p bdw-1 bds-solid bdc-black ov-hidden",
+                "bdtlr-6 bdblr-8 md:bdblr-0 md:bdbrr-0"
+              )}
+            >
               {blurhash !== null && (
                 <BlurhashCanvas
                   hash={blurhash}
@@ -299,14 +304,13 @@ const Hit = ({ hit }: any) => {
       </div>
       <div
         className={cx(
-          "pos-relative p-16 z-4 bdlw-1 bdrw-1 bdbw-1 bds-solid bdc-black bdtw-0 color-theme bdblr-6 bdbrr-6 color-light-grey fw-normal",
+          "pos-relative p-8 md:p-16 z-4 bdrw-1 bdbw-1 bds-solid bdc-black bdlw-0 md:bdlw-1 bdtw-1 md:bdtw-0 color-theme  color-light-grey fw-normal fx-7 h-100p md:h-auto",
+          "bdtrr-6 bdbrr-6 md:bdtrr-0 md:bdblr-6 md:bdbrr-6",
           style.card
         )}
-        style={{
-          height: "calc(100% - 260px)",
-        }}
+        style={{}}
       >
-        <header className="mt-16">
+        <header className="md:mt-16">
           <h4 className="color-white m-0">{hit?.track_name}</h4>
           {hit.artists &&
             Object.values(hit.artists).map((artist: any, index: number) => {
@@ -336,12 +340,55 @@ const Hit = ({ hit }: any) => {
               Spotify
             </a>
           </p>
-          <div className="h-40">
+          <div className="h-40 d-none md:d-block">
             {hit.popularity ? (
               <Popularity popularity={hit.popularity} />
             ) : (
               <p>No data available</p>
             )}
+          </div>
+
+          <div className="h-20 d-block md:d-none">
+            {[
+              {
+                value: isPlaying ? (
+                  <Pause width={16} height={16} />
+                ) : (
+                  <Play width={16} height={16} />
+                ),
+                action: () => {
+                  if (audioRef?.current) {
+                    if (audioRef.current.paused) {
+                      audioRef.current.play();
+                      setIsPlaying(true);
+                    } else {
+                      audioRef.current.pause();
+                      setIsPlaying(false);
+                    }
+                  }
+                },
+              },
+              {
+                value: <SkipBack width={16} height={16} />,
+                action: () => {
+                  if (audioRef?.current) {
+                    audioRef.current.pause();
+                    audioRef.current.currentTime = 0;
+                  }
+                },
+              },
+            ].map((item, index) => (
+              <button
+                key={index}
+                onClick={() => item.action()}
+                className={cx(
+                  "app-none bdw-0 w-20 h-20 p-8 cursor-pointer ml-16 d-inline-block mt-16 box-content",
+                  style.button
+                )}
+              >
+                {item.value}
+              </button>
+            ))}
           </div>
 
           <audio
@@ -399,7 +446,7 @@ const Hits = ({ hits, version, setVersion }) => {
     }
   }, [hits]);
   return (
-    <div className="d-grid g-2 ggap-16 md:g-4 lg:g-6 pt-16 w-100p">
+    <div className="d-grid md:g-2 ggap-16 md:g-4 lg:g-6 pt-16 w-100p">
       {hits.map((hit) => {
         return <Hit key={hit.objectID} hit={hit} />;
       })}
