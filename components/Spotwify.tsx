@@ -370,7 +370,7 @@ const Hit = ({ hit, musicPlay, setMusicPlay }: any) => {
                 key={index}
                 onClick={() => item.action()}
                 className={cx(
-                  "app-none h-30 bgc-theme bdw-0 w-90p bdr-4 cursor-pointer d-inline-block box-content color-white"
+                  "app-none h-30 bgc-theme bdw-0 w-90p bdr-4 cursor-pointer d-inline-block color-white"
                 )}
               >
                 {item.value}
