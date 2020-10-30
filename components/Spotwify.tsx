@@ -23,8 +23,8 @@ const loadImage = async (src) =>
   new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = "Anonymous";
-    img.width = 32;
-    img.height = 32;
+    img.width = 24;
+    img.height = 24;
     img.onload = () => resolve(img);
     img.onerror = (...args) => reject(args);
     img.src = src;
@@ -129,9 +129,40 @@ const RefinementList = ({
 
 const CustomRefinementList = connectRefinementList(RefinementList);
 
+const between = (n: number, a: number, b: number) => {
+  var min = Math.min(a, b),
+    max = Math.max(a, b);
+
+  return n > min && n < max;
+};
+
+const Popularity = ({ popularity }) => {
+  const [stars, setStars] = useState<any>("");
+
+  useEffect(() => {
+    if (between(popularity, 0, 20)) {
+      setStars("★☆☆☆☆");
+    }
+    if (between(popularity, 20, 40)) {
+      setStars("★★☆☆☆");
+    }
+    if (between(popularity, 40, 60)) {
+      setStars("★★★☆☆");
+    }
+    if (between(popularity, 60, 80)) {
+      setStars("★★★★☆");
+    }
+    if (between(popularity, 80, 100)) {
+      setStars("★★★★★");
+    }
+  }, []);
+  return <span className="color-theme lsp-big lh-normal">{stars}</span>;
+};
+
 const Hit = ({ hit }: any) => {
   const [blurhash, setBlurhash] = useState<string | null>(null);
   const [ready, setReady] = useState<boolean>(false);
+  const [hovered, setHovered] = useState<boolean>(false);
   const imageRef = useRef<HTMLImageElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -187,81 +218,26 @@ const Hit = ({ hit }: any) => {
       key={hit.objectID}
       className="bdr-6 color-black fw-bold ov-hidden h-100p"
       ref={cardRef}
+      onMouseOver={() => {
+        setHovered(true);
+      }}
+      onMouseLeave={() => {
+        setHovered(false);
+      }}
     >
       <div className="h-260">
         {ready && (
           <div className="pos-relative h-100p">
-            {blurhash !== null && (
-              <BlurhashCanvas
-                hash={blurhash}
-                className="pos-absolute z-0 w-100p h-100p"
-              />
-            )}
-
-            <img
-              ref={imageRef}
-              className="op-0"
-              style={{ boxShadow: "0 8px 24px rgba(0,0,0,.5)" }}
-            />
-          </div>
-        )}
-        {!ready && (
-          <div className="pos-relative h-100p">
-            <div className="bgc-moon h-100p w-100p"></div>
-          </div>
-        )}
-      </div>
-      <div
-        className={cx(
-          "pos-relative p-16 z-4 bdlw-1 bdrw-1 bdbw-1 bds-solid bdc-black bdtw-0 color-theme bdblr-6 bdbrr-6 color-light-grey fw-normal",
-          style.card
-        )}
-      >
-        <header>
-          <h4 className="color-white m-0">{hit?.track_name}</h4>
-          <small style={{ color: "#b3b3b3" }}>{hit?.artists[0]?.name}</small>
-        </header>
-        <article>
-          <p>
-            <a
-              href={hit?.entities?.urls && hit?.entities?.urls[0].expanded_url}
-              className="d-flex ai-center color-white hover:color-light-grey"
+            <div
+              className="pos-absolute z-5 right-16 h-auto "
+              style={{ bottom: -16 }}
             >
-              <Music className="stroke-theme mr-8" /> Listen on Spotify
-            </a>
-          </p>
-          <div>
-            <label htmlFor={`popularity-${slugify(hit?.track_name)}`}>
-              Popularity:
-            </label>
-            <br />
-            <span className="p-8">{hit?.popularity}</span>
-            <progress
-              value={hit?.popularity}
-              max="100"
-              id={`popularity-${slugify(hit?.track_name)}`}
-              className="w-100p"
-            />
-          </div>
-          <div>
-            <label htmlFor={`sample-${slugify(hit?.track_name)}`}>
-              30 seconds sample:
-            </label>
-
-            <audio
-              src={hit?.preview_url}
-              controls
-              className="app-none bdr-0 w-100p d-none"
-              ref={audioRef}
-            ></audio>
-
-            <div className="d-grid g-4 ggap-8 pv-16">
               {[
                 {
                   value: isPlaying ? (
-                    <Pause />
+                    <Pause width={16} height={16} />
                   ) : (
-                    <Play width={20} height={20} />
+                    <Play width={16} height={16} />
                   ),
                   action: () => {
                     if (audioRef?.current) {
@@ -276,7 +252,7 @@ const Hit = ({ hit }: any) => {
                   },
                 },
                 {
-                  value: <SkipBack width={20} height={20} />,
+                  value: <SkipBack width={16} height={16} />,
                   action: () => {
                     if (audioRef?.current) {
                       audioRef.current.pause();
@@ -289,15 +265,67 @@ const Hit = ({ hit }: any) => {
                   key={index}
                   onClick={() => item.action()}
                   className={cx(
-                    "app-none bdw-0 p-8 cursor-pointer",
-                    style.button
+                    "app-none bdw-0 w-20 h-20 p-8 cursor-pointer ml-16 d-inline-block mt-16 box-content",
+                    style.button,
+                    hovered ? style.popIn : style.popOut
                   )}
                 >
                   {item.value}
                 </button>
               ))}
             </div>
+
+            <div className="pos-absolute z-4 h-100p w-100p bdw-1 bds-solid bdc-black bdtlr-6 bdtrr-6 ov-hidden">
+              {blurhash !== null && (
+                <BlurhashCanvas
+                  hash={blurhash}
+                  className="pos-absolute z-0 w-100p h-100p"
+                />
+              )}
+
+              <img
+                ref={imageRef}
+                className="op-0"
+                style={{ boxShadow: "0 8px 24px rgba(0,0,0,.5)" }}
+              />
+            </div>
           </div>
+        )}
+        {!ready && (
+          <div className="pos-relative h-100p">
+            <div className="bgc-moon h-100p w-100p"></div>
+          </div>
+        )}
+      </div>
+      <div
+        className={cx(
+          "pos-relative p-16 z-4 bdlw-1 bdrw-1 bdbw-1 bds-solid bdc-black bdtw-0 color-theme bdblr-6 bdbrr-6 color-light-grey fw-normal",
+          style.card
+        )}
+      >
+        <header className="mt-16">
+          <h4 className="color-white m-0">{hit?.track_name}</h4>
+          <small style={{ color: "#b3b3b3" }}>{hit?.artists[0]?.name}</small>
+        </header>
+        <article>
+          <p>
+            <a
+              href={hit?.entities?.urls && hit?.entities?.urls[0].expanded_url}
+              className="d-flex ai-center color-white hover:color-light-grey"
+            >
+              <Music className="stroke-theme mr-8" /> Listen on Spotify
+            </a>
+          </p>
+          <div>
+            {hit.popularity && <Popularity popularity={hit.popularity} />}
+          </div>
+
+          <audio
+            src={hit?.preview_url}
+            controls
+            className="app-none bdr-0 w-100p d-none"
+            ref={audioRef}
+          />
         </article>
       </div>
     </div>
@@ -329,9 +357,11 @@ const SetupScreen = ({ setReady }) => {
         transition: "opacity .3s ease",
       }}
     >
-      <div>
+      <div className="color-theme">
         <h2>Some things have changed since your last visit</h2>
-        <h3>Hang on</h3>
+        <h3>
+          Hang on, the app is loading & caching a few things to work faster
+        </h3>
       </div>
     </div>
   );

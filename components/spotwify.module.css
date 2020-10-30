@@ -19,6 +19,14 @@
   border-color: #1db954;
   border-radius: 100px;
   text-align: center;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease;
+  will-change: transform;
+  outline: none;
+}
+
+.button + .button {
+  transition: transform 0.2s ease 0.1s;
 }
 
 .buttonActive {
@@ -36,4 +44,12 @@
 .spotwifyContainer {
   transition: opacity 0.3s ease;
   will-change: opacity;
+}
+
+.popIn {
+  transform: scale(1);
+}
+
+.popOut {
+  transform: scale(0);
 }
