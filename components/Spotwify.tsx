@@ -10,7 +10,7 @@ import {
 } from "react-instantsearch-dom";
 import { slugify } from "../scripts/helpers";
 import { BlurhashCanvas } from "react-blurhash";
-import { X, Play, Pause, SkipBack } from "react-feather";
+import { X, Play, Pause, SkipBack, Music } from "react-feather";
 
 import cx from "classnames";
 
@@ -134,6 +134,7 @@ const Hit = ({ hit }: any) => {
   const [ready, setReady] = useState<boolean>(false);
   const imageRef = useRef<HTMLImageElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
   useEffect(() => {
@@ -162,7 +163,7 @@ const Hit = ({ hit }: any) => {
       imageRef.current.src = hit?.track_images[1]?.url;
       imageRef.current.alt = hit?.track_name;
       imageRef.current.className =
-        "w-100p h-100p obf-cover obp-center m-0 p-0 z-1 op-1";
+        "w-100p h-100p obf-cover obp-center m-0 p-0 z-1 op-1 bdr-6";
       imageRef.current.style.transform = "scale(0.8)";
       imageRef.current.style.transition =
         "opacity .3s ease, transform .2s ease";
@@ -171,11 +172,11 @@ const Hit = ({ hit }: any) => {
   }, [blurhash]);
 
   useEffect(() => {
-    if (imageRef.current) {
-      imageRef.current.addEventListener("mouseover", () => {
+    if (cardRef?.current && imageRef?.current) {
+      cardRef.current.addEventListener("mouseover", () => {
         imageRef.current.style.transform = "scale(0.9)";
       });
-      imageRef.current.addEventListener("mouseleave", () => {
+      cardRef.current.addEventListener("mouseleave", () => {
         imageRef.current.style.transform = "scale(0.8)";
       });
     }
@@ -185,6 +186,7 @@ const Hit = ({ hit }: any) => {
     <div
       key={hit.objectID}
       className="bdr-6 color-black fw-bold ov-hidden h-100p"
+      ref={cardRef}
     >
       <div className="h-260">
         {ready && (
@@ -223,9 +225,9 @@ const Hit = ({ hit }: any) => {
           <p>
             <a
               href={hit?.entities?.urls && hit?.entities?.urls[0].expanded_url}
-              className="bdw-0 bdbw-2 bds-dotted bdc-theme"
+              className="d-flex ai-center color-white hover:color-light-grey"
             >
-              🔗 Listen on Spotify
+              <Music className="stroke-theme mr-8" /> Listen on Spotify
             </a>
           </p>
           <div>
@@ -302,7 +304,46 @@ const Hit = ({ hit }: any) => {
   );
 };
 
-const Hits = ({ hits }) => {
+const SetupScreen = ({ setReady }) => {
+  const [deleteScreen, setDeleteScreen] = useState<boolean>(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDeleteScreen(true);
+      setReady(true);
+    }, 1000);
+    return () => clearTimeout(timer);
+  });
+
+  return (
+    <div
+      className={cx(
+        "w-100p pos-fixed bgc-black pos-absolute top-0 left-0 z-max ta-center d-flex ai-center jc-center fw-regular",
+        `p-${deleteScreen ? 0 : 32}`
+      )}
+      style={{
+        background: "rgba(0,0,0,0.9)",
+        zIndex: deleteScreen ? -9999 : 9999,
+        height: deleteScreen ? 0 : "100vh",
+        opacity: deleteScreen ? 0 : 1,
+        transition: "opacity .3s ease",
+      }}
+    >
+      <div>
+        <h2>Some things have changed since your last visit</h2>
+        <h3>Hang on</h3>
+      </div>
+    </div>
+  );
+};
+
+const Hits = ({ hits, version, setVersion }) => {
+  useEffect(() => {
+    if (hits?.[0]?.version !== undefined) {
+      setVersion(hits[0].version);
+      console.log(version);
+    }
+  }, [hits]);
   return (
     <div className="d-grid g-2 ggap-16 md:g-4 lg:g-6 pt-16 w-100p">
       {hits.map((hit) => {
@@ -314,52 +355,35 @@ const Hits = ({ hits }) => {
 
 const CustomHits = connectHits(Hits);
 
-const SetupScreen = () => {
-  const [deleteScreen, setDeleteScreen] = useState<boolean>(false);
-  useEffect(() => {
-    setTimeout(() => {
-      setDeleteScreen(true);
-    }, 5000);
-  });
-
-  return (
-    <div
-      className="w-100p h-100p pos-absolute bgc-black pos-absolute z-max p-32 ta-center d-flex ai-center jc-center"
-      style={{
-        background: "rgba(0,0,0,0.9)",
-        zIndex: 9999,
-        display: deleteScreen ? "none" : "block",
-      }}
-    >
-      <h2>Some things have changed since your last visit</h2>
-      <h3>Hang on</h3>
-    </div>
-  );
-};
-
 const Spotwify = () => {
-  const [visited, setVisited] = useState<boolean | null>(false);
+  const [version, setVersion] = useState<string>();
+  const [splashScreen, setSplashScreen] = useState<boolean>(false);
+  const [ready, setReady] = useState<boolean>(false);
 
   useEffect(() => {
-    const projectVersion = 2;
-    if (localStorage.getItem(`spotwify-visited-v-${projectVersion - 1}`)) {
-      localStorage.clear();
+    if (version !== undefined) {
+      if (localStorage.getItem(`spotwify-v-${version}`)) {
+        setSplashScreen(false);
+        setReady(true);
+      } else {
+        localStorage.clear();
+        localStorage.setItem(`spotwify-v-${version}`, "1");
+        setSplashScreen(true);
+      }
     }
-    if (localStorage.getItem(`spotwify-visited-v-${projectVersion}`) !== null) {
-      console.log("YES");
-      setVisited(true);
-    } else {
-      setVisited(false);
-      localStorage.setItem(`spotwify-visited-v-${projectVersion}`, "1");
-    }
-  });
+  }, [version]);
+
   return (
-    <div className="w-100p">
-      {visited !== true && <SetupScreen />}
+    <div className="w-100p mih-100vh">
+      {splashScreen && <SetupScreen setReady={setReady} />}
       <InstantSearch searchClient={searchClient} indexName={"SPOTWIFY"}>
         <Configure hitsPerPage={20} />
         <div
-          className={cx("pos-sticky top-0 z-5 bgc-black p-24", style.header)}
+          className={cx(
+            "pos-sticky top-0 z-5 bgc-black p-24",
+            style.header,
+            `op-${ready ? 1 : 0}`
+          )}
         >
           <div className="d-block md:d-none">
             <CustomSearchBox />
@@ -369,8 +393,14 @@ const Spotwify = () => {
           </div>
         </div>
 
-        <div className="w-100p ov-hidden">
-          <CustomHits />
+        <div
+          className={cx(
+            "w-100p ov-hidden",
+            `op-${ready ? 1 : 0}`,
+            style.spotwifyContainer
+          )}
+        >
+          <CustomHits version={version} setVersion={setVersion} />
         </div>
 
         <Pagination />

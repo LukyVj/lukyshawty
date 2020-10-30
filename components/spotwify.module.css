@@ -1,3 +1,7 @@
+.header {
+  transition: opacity 0.3s ease;
+  will-change: opacity;
+}
 .header::before {
   content: "";
   display: block;
@@ -23,7 +27,13 @@
 .card {
   background: #181818;
   transition: background 0.2s ease;
+  will-change: background;
 }
 .card:hover {
   background: #282828;
+}
+
+.spotwifyContainer {
+  transition: opacity 0.3s ease;
+  will-change: opacity;
 }
