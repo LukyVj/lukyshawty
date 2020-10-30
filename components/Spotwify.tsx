@@ -84,8 +84,8 @@ const RefinementList = ({
   searchForItems,
   createURL,
 }) => (
-  <ul className="d-grid g-6 lis-none p-0 m-0 ggap-8">
-    <li className="gcstart-1 gcend-7 d-grid g-2 ggap-16">
+  <div>
+    <div className="gcstart-1 gcend-7 d-grid g-2 ggap-16">
       <div className="d-none md:d-block">
         <CustomSearchBox />
       </div>
@@ -96,35 +96,34 @@ const RefinementList = ({
         className="w-100p h-40 ph-16 fsz-24 app-none bdw-0 bdr-max"
         placeholder="Search for more artist"
       />
-    </li>
-    {items.map((item) => (
-      <li
-        key={item.label}
-        className={cx(
-          "bdw-2 bds-solid",
-          style.button,
-          item.isRefined && style.buttonActive
-        )}
-        style={{ backgroundColor: item.isRefined ? "black" : "#1db954" }}
-      >
-        <a
-          href={createURL(item.value)}
-          className={"w-100p h-100p d-block p-16"}
-          onClick={(event) => {
-            event.preventDefault();
-            refine(item.value);
-          }}
+    </div>
+    <ul className="d-flex lis-none p-0 m-0 ggap-8">
+      {items.map((item) => (
+        <li
+          key={item.label}
+          // style={{ backgroundColor: item.isRefined ? "black" : "#1db954" }}
         >
-          {isFromSearch ? (
-            <Highlight attribute="label" hit={item} />
-          ) : (
-            item.label
-          )}{" "}
-          ({item.count})
-        </a>
-      </li>
-    ))}
-  </ul>
+          <a
+            href={createURL(item.value)}
+            className={"w-100p h-100p d-block p-8 hover:td-underline"}
+            onClick={(event) => {
+              event.preventDefault();
+              refine(item.value);
+            }}
+          >
+            <small>
+              {isFromSearch ? (
+                <Highlight attribute="label" hit={item} />
+              ) : (
+                item.label
+              )}{" "}
+              <strong>{item.count}</strong>
+            </small>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
 );
 
 const CustomRefinementList = connectRefinementList(RefinementList);
@@ -195,7 +194,8 @@ const Hit = ({ hit }: any) => {
       imageRef.current.alt = hit?.track_name;
       imageRef.current.className =
         "w-100p h-100p obf-cover obp-center m-0 p-0 z-1 op-1 bdr-6";
-      imageRef.current.style.transform = "scale(0.8)";
+      imageRef.current.style.transform = "scale(0.7)";
+      imageRef.current.style.willChange = "transform";
       imageRef.current.style.transition =
         "opacity .3s ease, transform .2s ease";
       imageRef.current.loading = "lazy";
@@ -205,10 +205,10 @@ const Hit = ({ hit }: any) => {
   useEffect(() => {
     if (cardRef?.current && imageRef?.current) {
       cardRef.current.addEventListener("mouseover", () => {
-        imageRef.current.style.transform = "scale(0.9)";
+        imageRef.current.style.transform = "scale(0.8)";
       });
       cardRef.current.addEventListener("mouseleave", () => {
-        imageRef.current.style.transform = "scale(0.8)";
+        imageRef.current.style.transform = "scale(0.7)";
       });
     }
   });
@@ -302,21 +302,41 @@ const Hit = ({ hit }: any) => {
           "pos-relative p-16 z-4 bdlw-1 bdrw-1 bdbw-1 bds-solid bdc-black bdtw-0 color-theme bdblr-6 bdbrr-6 color-light-grey fw-normal",
           style.card
         )}
+        style={{
+          height: "calc(100% - 260px)",
+        }}
       >
         <header className="mt-16">
           <h4 className="color-white m-0">{hit?.track_name}</h4>
-          <small style={{ color: "#b3b3b3" }}>{hit?.artists[0]?.name}</small>
+          {hit.artists &&
+            Object.values(hit.artists).map((artist: any, index: number) => {
+              return (
+                <small style={{ color: "#b3b3b3" }}>
+                  <a
+                    href={`http://open.spotify.com/search/${encodeURI(
+                      artist.name
+                    )}`}
+                    className="td-none color-inherit hover:td-underline"
+                    title={`Open spotify search for ${artist.name}`}
+                  >
+                    {artist.name}
+                  </a>
+                  {index !== Object.values(hit.artists).length - 1 && ", "}
+                </small>
+              );
+            })}
         </header>
         <article>
           <p>
             <a
               href={hit?.entities?.urls && hit?.entities?.urls[0].expanded_url}
-              className="d-flex ai-center color-white hover:color-light-grey"
+              className="d-flex ai-center color-white hover:color-light-grey hover:td-underline"
             >
-              <Music className="stroke-theme mr-8" /> Listen on Spotify
+              <Music className="stroke-theme mr-8" height={16} /> Listen on
+              Spotify
             </a>
           </p>
-          <div>
+          <div className="h-40">
             {hit.popularity && <Popularity popularity={hit.popularity} />}
           </div>
 
