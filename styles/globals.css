@@ -41,6 +41,7 @@ a {
   border-radius: 100px;
   text-align: center;
   max-width: 100px;
+  margin: 8px 4px;
 }
 
 .ais-Pagination-item .ais-Pagination-link {

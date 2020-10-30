@@ -155,17 +155,21 @@ const Popularity = ({ popularity }) => {
       setStars("★★★★★");
     }
   }, []);
-  return <span className="color-theme lsp-big lh-normal">{stars}</span>;
+  return (
+    <span className="color-theme lsp-big lh-normal fsz-12 md:fsz-14">
+      {stars}
+    </span>
+  );
 };
 
-const Hit = ({ hit }: any) => {
+const Hit = ({ hit, musicPlay, setMusicPlay }: any) => {
   const [blurhash, setBlurhash] = useState<string | null>(null);
   const [ready, setReady] = useState<boolean>(false);
   const [hovered, setHovered] = useState<boolean>(false);
   const imageRef = useRef<HTMLImageElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [isPlaying, setIsPlaying] = useState<boolean>(musicPlay);
 
   useEffect(() => {
     const main = async () => {
@@ -192,15 +196,17 @@ const Hit = ({ hit }: any) => {
     if (imageRef?.current) {
       imageRef.current.src = hit?.track_images[1]?.url;
       imageRef.current.alt = hit?.track_name;
-      imageRef.current.className =
-        "w-100p h-100p obf-cover obp-center m-0 p-0 z-1 op-1 bdr-6";
+      imageRef.current.className = cx(
+        `w-100p h-100p`,
+        `obf-cover obp-center m-0 p-0 z-1 op-1 bdr-6`
+      );
       imageRef.current.style.transform = "scale(0.7)";
       imageRef.current.style.willChange = "transform";
       imageRef.current.style.transition =
         "opacity .3s ease, transform .2s ease";
       imageRef.current.loading = "lazy";
     }
-  }, [blurhash]);
+  }, [blurhash, hovered]);
 
   useEffect(() => {
     if (cardRef?.current && imageRef?.current) {
@@ -213,10 +219,48 @@ const Hit = ({ hit }: any) => {
     }
   });
 
+  const handlePlayClick = () => {
+    if (audioRef?.current) {
+      if (audioRef.current.paused) {
+        audioRef.current.play();
+        setIsPlaying(true);
+        setMusicPlay(false);
+      } else {
+        audioRef.current.pause();
+        setIsPlaying(false);
+        setMusicPlay(false);
+      }
+    }
+  };
+
+  const handleStopClick = () => {
+    if (audioRef?.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      setIsPlaying(false);
+      setMusicPlay(false);
+    }
+  };
+
+  const navArray = [
+    {
+      value: isPlaying ? (
+        <Pause width={16} height={16} />
+      ) : (
+        <Play width={16} height={16} />
+      ),
+      action: () => handlePlayClick(),
+    },
+    {
+      value: <SkipBack width={16} height={16} />,
+      action: () => handleStopClick(),
+    },
+  ];
+
   return (
     <div
       key={hit.objectID}
-      className="bdr-6 color-black fw-bold ov-hidden h-100 md:h-100p d-flex fxd-row md:d-block"
+      className="bdr-6 color-black fw-bold ov-hidden mih-100 md:h-100p d-flex fxd-row md:d-block"
       ref={cardRef}
       onMouseOver={() => {
         setHovered(true);
@@ -232,35 +276,7 @@ const Hit = ({ hit }: any) => {
               className="pos-absolute z-5 right-16 h-auto d-none md:d-block"
               style={{ bottom: -16 }}
             >
-              {[
-                {
-                  value: isPlaying ? (
-                    <Pause width={16} height={16} />
-                  ) : (
-                    <Play width={16} height={16} />
-                  ),
-                  action: () => {
-                    if (audioRef?.current) {
-                      if (audioRef.current.paused) {
-                        audioRef.current.play();
-                        setIsPlaying(true);
-                      } else {
-                        audioRef.current.pause();
-                        setIsPlaying(false);
-                      }
-                    }
-                  },
-                },
-                {
-                  value: <SkipBack width={16} height={16} />,
-                  action: () => {
-                    if (audioRef?.current) {
-                      audioRef.current.pause();
-                      audioRef.current.currentTime = 0;
-                    }
-                  },
-                },
-              ].map((item, index) => (
+              {navArray.map((item, index) => (
                 <button
                   key={index}
                   onClick={() => item.action()}
@@ -277,8 +293,8 @@ const Hit = ({ hit }: any) => {
 
             <div
               className={cx(
-                "pos-absolute z-4 h-100p w-100p bdw-1 bds-solid bdc-black ov-hidden",
-                "bdtlr-6 bdblr-8 md:bdblr-0 md:bdbrr-0"
+                "pos-absolute z-4 h-100p w-100p bdw-1 bds-solid bdc-black ov-hidden d-flex ai-center jc-center",
+                "bdtlr-6 bdblr-6 md:bdtlr-0 md:bdblr-0"
               )}
             >
               {blurhash !== null && (
@@ -331,16 +347,16 @@ const Hit = ({ hit }: any) => {
             })}
         </header>
         <article>
-          <p>
+          <p className="mv-8 pv-0 ">
             <a
               href={hit?.entities?.urls && hit?.entities?.urls[0].expanded_url}
-              className="d-flex ai-center color-white hover:color-light-grey hover:td-underline"
+              className="d-flex ai-center fsz-14 color-white hover:color-light-grey hover:td-underline"
             >
-              <Music className="stroke-theme mr-8" height={16} /> Listen on
-              Spotify
+              <Music className="stroke-theme mr-8" height={14} width={14} />{" "}
+              Listen on Spotify
             </a>
           </p>
-          <div className="h-40 d-none md:d-block">
+          <div className="h-20 mb-8">
             {hit.popularity ? (
               <Popularity popularity={hit.popularity} />
             ) : (
@@ -348,42 +364,13 @@ const Hit = ({ hit }: any) => {
             )}
           </div>
 
-          <div className="h-20 d-block md:d-none">
-            {[
-              {
-                value: isPlaying ? (
-                  <Pause width={16} height={16} />
-                ) : (
-                  <Play width={16} height={16} />
-                ),
-                action: () => {
-                  if (audioRef?.current) {
-                    if (audioRef.current.paused) {
-                      audioRef.current.play();
-                      setIsPlaying(true);
-                    } else {
-                      audioRef.current.pause();
-                      setIsPlaying(false);
-                    }
-                  }
-                },
-              },
-              {
-                value: <SkipBack width={16} height={16} />,
-                action: () => {
-                  if (audioRef?.current) {
-                    audioRef.current.pause();
-                    audioRef.current.currentTime = 0;
-                  }
-                },
-              },
-            ].map((item, index) => (
+          <div className="d-grid g-2 ggap-8 md:d-none">
+            {navArray.map((item, index) => (
               <button
                 key={index}
                 onClick={() => item.action()}
                 className={cx(
-                  "app-none bdw-0 w-20 h-20 p-8 cursor-pointer ml-16 d-inline-block mt-16 box-content",
-                  style.button
+                  "app-none h-30 bgc-theme bdw-0 w-90p bdr-4 cursor-pointer d-inline-block box-content color-white"
                 )}
               >
                 {item.value}
@@ -438,7 +425,7 @@ const SetupScreen = ({ setReady }) => {
   );
 };
 
-const Hits = ({ hits, version, setVersion }) => {
+const Hits = ({ hits, version, setVersion, musicPlay, setMusicPlay }) => {
   useEffect(() => {
     if (hits?.[0]?.version !== undefined) {
       setVersion(hits[0].version);
@@ -448,7 +435,14 @@ const Hits = ({ hits, version, setVersion }) => {
   return (
     <div className="d-grid md:g-2 ggap-16 md:g-4 lg:g-6 pt-16 w-100p">
       {hits.map((hit) => {
-        return <Hit key={hit.objectID} hit={hit} />;
+        return (
+          <Hit
+            key={hit.objectID}
+            hit={hit}
+            musicPlay={musicPlay}
+            setMusicPlay={setMusicPlay}
+          />
+        );
       })}
     </div>
   );
@@ -460,6 +454,7 @@ const Spotwify = () => {
   const [version, setVersion] = useState<string>();
   const [splashScreen, setSplashScreen] = useState<boolean>(false);
   const [ready, setReady] = useState<boolean>(false);
+  const [musicPlay, setMusicPlay] = useState<boolean>(false);
 
   useEffect(() => {
     if (version !== undefined) {
@@ -501,7 +496,12 @@ const Spotwify = () => {
             style.spotwifyContainer
           )}
         >
-          <CustomHits version={version} setVersion={setVersion} />
+          <CustomHits
+            version={version}
+            setVersion={setVersion}
+            musicPlay={musicPlay}
+            setMusicPlay={setMusicPlay}
+          />
         </div>
 
         <Pagination />
