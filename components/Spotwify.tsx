@@ -337,7 +337,11 @@ const Hit = ({ hit }: any) => {
             </a>
           </p>
           <div className="h-40">
-            {hit.popularity && <Popularity popularity={hit.popularity} />}
+            {hit.popularity ? (
+              <Popularity popularity={hit.popularity} />
+            ) : (
+              <p>No data available</p>
+            )}
           </div>
 
           <audio

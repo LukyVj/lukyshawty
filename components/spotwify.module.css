@@ -20,13 +20,13 @@
   border-radius: 100px;
   text-align: center;
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
-  transition: transform 0.2s ease;
-  will-change: transform;
+  transition: opacity 0.3s ease 0.2s, transform 0.3s ease 0.2s;
+  will-change: transform, opacity;
   outline: none;
 }
 
 .button + .button {
-  transition: transform 0.2s ease 0.1s;
+  transition: opacity 0.3s ease 0.2s, transform 0.3s ease 0.3s;
 }
 
 .buttonActive {
@@ -47,9 +47,11 @@
 }
 
 .popIn {
-  transform: scale(1);
+  transform: translateY(0);
+  opacity: 1;
 }
 
 .popOut {
-  transform: scale(0);
+  transform: translateY(-10px);
+  opacity: 0;
 }
