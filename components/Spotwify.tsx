@@ -224,11 +224,11 @@ const Hit = ({ hit, musicPlay, setMusicPlay }: any) => {
       if (audioRef.current.paused) {
         audioRef.current.play();
         setIsPlaying(true);
-        setMusicPlay(false);
+        // setMusicPlay(false);
       } else {
         audioRef.current.pause();
         setIsPlaying(false);
-        setMusicPlay(false);
+        // setMusicPlay(false);
       }
     }
   };
@@ -238,7 +238,7 @@ const Hit = ({ hit, musicPlay, setMusicPlay }: any) => {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
       setIsPlaying(false);
-      setMusicPlay(false);
+      // setMusicPlay(false);
     }
   };
 
@@ -266,6 +266,12 @@ const Hit = ({ hit, musicPlay, setMusicPlay }: any) => {
         setHovered(true);
       }}
       onMouseLeave={() => {
+        setHovered(false);
+      }}
+      onTouchStart={() => {
+        setHovered(true);
+      }}
+      onTouchEnd={() => {
         setHovered(false);
       }}
     >
